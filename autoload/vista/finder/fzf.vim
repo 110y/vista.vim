@@ -79,7 +79,23 @@ endfunction
 
 " Optional argument: winid for the origin tags window
 function! vista#finder#fzf#sink(line, ...) abort
-  let [lnum, tag] = vista#finder#fzf#extract(a:line)
+  let splited = split(a:line, ':')
+
+  if len(splited) > 2
+    let path = splited[0]
+    let line = printf('%s:%s', splited[1], splited[2])
+  else
+    let path = ''
+    let line = a:line
+  endif
+
+  if path !=# ''
+    execute printf('edit %s', path)
+  endif
+
+  let line = a:line
+
+  let [lnum, tag] = vista#finder#fzf#extract(line)
   let col = stridx(g:vista.source.line(lnum), tag)
   let col = col == -1 ? 1 : col + 1
   if a:0 > 0

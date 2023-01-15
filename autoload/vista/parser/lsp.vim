@@ -49,6 +49,8 @@ function! vista#parser#lsp#KindToSymbol(line, container) abort
   if has_key(line, 'location')
     let location = line.location
     if s:IsFileUri(location.uri)
+      let path = substitute(location.uri, 'file://', '', '')
+      let path = substitute(path, printf('%s/', $PWD), '', '')
       let lnum = location.range.start.line + 1
       let col = location.range.start.character + 1
       call add(a:container, {
@@ -56,6 +58,7 @@ function! vista#parser#lsp#KindToSymbol(line, container) abort
          \ 'col': col,
          \ 'kind': s:Kind2Symbol(line.kind),
          \ 'text': line.name,
+         \ 'path': path,
          \ })
     endif
   " DocumentSymbol class
@@ -111,6 +114,10 @@ function! vista#parser#lsp#ExtractSymbol(symbol, container) abort
   endif
 
   let picked = {'lnum': symbol.lnum, 'col': symbol.col, 'text': symbol.text}
+
+  if has_key(symbol, 'path')
+    let picked['path'] = symbol.path
+  endif
 
   if has_key(a:container, symbol.kind)
     call add(a:container[symbol.kind], picked)
