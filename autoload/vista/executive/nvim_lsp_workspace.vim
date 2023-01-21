@@ -81,7 +81,12 @@ function! s:RunAsync() abort
       mod = cmd:read("*a")
     end
 
-    local pkg = string.format('%s/%s', mod, dir)
+    local pkg = ''
+    if dir == '.' then
+      pkg = mod
+    else
+      pkg = string.format('%s/%s', mod, dir)
+    end
 
     vim.g.vista_current_go_pkg = pkg
 
