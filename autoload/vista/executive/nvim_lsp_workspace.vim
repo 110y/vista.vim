@@ -41,8 +41,12 @@ function! s:RunAsync() abort
   endif
   call vista#SetProvider(s:provider)
   lua << EOF
+    local pwd = os.getenv("PWD")
+
     local params = vim.lsp.util.make_position_params()
     local callback = function(err, method_or_result, result_or_context)
+        vim.fn.execute('cd ' .. pwd)
+
         -- signature for the handler changed in neovim 0.6/master. The block
         -- below allows users to check the compatibility.
         local result
@@ -69,26 +73,41 @@ function! s:RunAsync() abort
     end
 
     local expand = vim.fn.expand('%:h')
-    local pwd = os.getenv("PWD")
     local dir = (expand:sub(0, #pwd) == pwd) and expand:sub(#pwd+1) or expand
 
-    local modfile = io.open("./go.mod", "r")
-    local mod = ''
-    if modfile ~= nil then
-      io.close(modfile)
-
-      local cmd = io.popen("go mod edit -json | jq -r .Module.Path | tr -d '\n'", "r")
-      mod = cmd:read("*a")
-    end
-
     local pkg = ''
-    if dir == '.' then
-      pkg = mod
+    local gopath = os.getenv("GOPATH")
+    if dir:sub(0, #gopath) == gopath then -- go/pkg/mod/
+      vim.fn.execute('cd ' .. dir)
+      vim.fn.execute('edit')
+
+      local path = dir:sub(#string.format('%s/pkg/mod/', gopath)+1)
+
+      pkg = string.gsub(path, '@.+(/)', '%1')
+    elseif dir:sub(0, 7) == 'vendor/' then -- vendor
+      vim.fn.execute('cd ' .. dir)
+      vim.fn.execute('edit')
+
+      pkg = dir:sub(8)
     else
-      pkg = string.format('%s/%s', mod, dir)
+      local mod = ''
+      local modfile = io.open("./go.mod", "r")
+      if modfile ~= nil then
+        io.close(modfile)
+
+        local cmd = io.popen("go mod edit -json | jq -r .Module.Path | tr -d '\n'", "r")
+        mod = cmd:read("*a")
+      end
+
+      if dir == '.' then
+        pkg = mod
+      else
+        pkg = string.format('%s/%s', mod, dir)
+      end
     end
 
     vim.g.vista_current_go_pkg = pkg
+    io.popen('echo ' .. pkg .. ' > ~/vista.log')
 
     local query = string.format('^%s', pkg)
     vim.lsp.buf_request(0, 'workspace/symbol', {query = query}, callback)
