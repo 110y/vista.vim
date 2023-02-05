@@ -105,7 +105,7 @@ endfunction
 function! vista#parser#lsp#ExtractSymbol(symbol, container) abort
   let symbol = a:symbol
 
-  if vista#ShouldIgnore(symbol.kind)
+  if vista#ShouldIgnore(symbol)
     return
   endif
 

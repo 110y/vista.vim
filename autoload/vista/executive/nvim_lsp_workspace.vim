@@ -139,7 +139,7 @@ endfunction
 function! vista#executive#nvim_lsp_workspace#ExtractSymbol(symbol, container) abort
   let symbol = a:symbol
 
-  if vista#ShouldIgnore(symbol.kind)
+  if vista#ShouldIgnore(symbol)
     return
   endif
 

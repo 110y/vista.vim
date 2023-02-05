@@ -22,8 +22,17 @@ function! vista#ShouldSkip() abort
 endfunction
 
 " Ignore some kinds of tags/symbols which is done at the parser step.
-function! vista#ShouldIgnore(kind) abort
-  return exists('g:vista_ignore_kinds') && index(g:vista_ignore_kinds, a:kind) != -1
+function! vista#ShouldIgnore(symbol) abort
+  if exists('g:vista_ignore_kinds') && index(g:vista_ignore_kinds, a:symbol.kind) != -1
+    return v:true
+  endif
+
+  let len = len(a:symbol.text)
+  if a:symbol.text[len-2:len-1] ==# '._'
+    return v:true
+  endif
+
+  return v:false
 endfunction
 
 function! vista#SetProvider(provider) abort
