@@ -84,6 +84,7 @@ function! s:RunAsync() abort
       local path = dir:sub(#string.format('%s/pkg/mod/', gopath)+1)
 
       pkg = string.gsub(path, '@.+(/)', '%1')
+      pkg = string.gsub(pkg, '@.+$', '')
     elseif dir:sub(0, 7) == 'vendor/' then -- vendor
       vim.fn.execute('cd ' .. dir)
       vim.fn.execute('edit')
@@ -107,7 +108,7 @@ function! s:RunAsync() abort
     end
 
     vim.g.vista_current_go_pkg = pkg
-    io.popen('echo ' .. pkg .. ' > ~/vista.log')
+    -- io.popen('echo ' .. pkg .. ' > ~/vista.log')
 
     local query = string.format('^%s', pkg)
     vim.lsp.buf_request(0, 'workspace/symbol', {query = query}, callback)
