@@ -77,6 +77,7 @@ function! s:RunAsync() abort
 
     local pkg = ''
     local gopath = os.getenv("GOPATH")
+    local sdkpath = string.format('%s/sdk/%s', os.getenv("HOME"), os.getenv("_GO_VERSION"))
     if dir:sub(0, #gopath) == gopath then -- go/pkg/mod/
       vim.fn.execute('cd ' .. dir)
       vim.fn.execute('edit')
@@ -90,6 +91,8 @@ function! s:RunAsync() abort
       vim.fn.execute('edit')
 
       pkg = dir:sub(8)
+    elseif dir:sub(0, #sdkpath) == sdkpath then -- std lib
+      pkg = dir:sub(#sdkpath+6) -- 6 means `/src/`
     else
       local mod = ''
       local modfile = io.open("./go.mod", "r")
