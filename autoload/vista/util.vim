@@ -137,9 +137,13 @@ function! vista#util#Blink(times, delay, ...) abort
 
   function! s:blink.clear() abort
     if exists('w:vista_blink_id')
-      call matchdelete(w:vista_blink_id)
-      unlet w:vista_blink_id
-      return 1
+      try
+        call matchdelete(w:vista_blink_id)
+        unlet w:vista_blink_id
+        return 1
+      catch
+        return 0
+      endtry
     endif
   endfunction
 
